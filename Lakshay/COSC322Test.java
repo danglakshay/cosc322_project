@@ -110,8 +110,10 @@ public class COSC322Test extends GamePlayer{
 		}
 		else if(messageType.equals(GameMessage.GAME_ACTION_MOVE)){
 			System.out.println(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR));
+			System.out.println("MESSAGE DETAILS  -------------------------------------");
+			
 			gamegui.updateGameState(msgDetails);
-			//handleOpponentMove(msgDetails);
+//			handleOpponentMove(msgDetails);
 		}
 		else if(messageType.equals("user-count-change")) {
 			//DefaultListModel<String> m = new DefaultListModel<>();
@@ -123,6 +125,11 @@ public class COSC322Test extends GamePlayer{
 	}
 	
 	
+//	private void handleOpponentMove(Map<String, Object> msgDetails) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+
 	@Override
 	public String userName() {
 		return userName;
