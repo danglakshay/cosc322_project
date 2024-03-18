@@ -36,6 +36,8 @@ public class COSC322Test extends GamePlayer {
 	private HumanPlayer player2;
 
 	private Move moveInstance;
+	ArrayList<Integer> currentGameState;
+	private int playerType;
 
 	/**
 	 * The main method
@@ -95,6 +97,17 @@ public class COSC322Test extends GamePlayer {
 			gamegui.setRoomInformation(gameClient.getRoomList());
 		}
 	}
+	
+	
+	public void updateLocalBoard(ArrayList<Integer> QCurr, ArrayList<Integer> QNew, ArrayList<Integer> Arrow ) {
+		int QCIndex = (QCurr.get(0)*11) + QCurr.get(1);
+		int QNIndex = (QNew.get(0)*11) + QNew.get(1);
+		int AIndex = (Arrow.get(0)*11) + Arrow.get(1);
+		
+		currentGameState.set(QCIndex, 0);
+		currentGameState.set(QNIndex,  playerType);
+		currentGameState.set(AIndex,  3);
+	}
 
 	@Override
 	public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
@@ -110,7 +123,8 @@ public class COSC322Test extends GamePlayer {
 
 		if (messageType.equals(GameMessage.GAME_STATE_BOARD)) {
 			ArrayList<Integer> gameS = (ArrayList<Integer>) msgDetails.get("game-state");
-			System.out.println("Game Board: " + gameS);
+			currentGameState = new ArrayList<Integer>(gameS);
+			System.out.println(gameS);
 
 			// Update the game state on the GUI
 			gamegui.setGameState(gameS);
@@ -121,20 +135,20 @@ public class COSC322Test extends GamePlayer {
 			}
 		} else if (messageType.equals(GameMessage.GAME_ACTION_START)) {
 			System.out.println("DEBUG");
-			System.out.println("Game Start:FUCK YOU " + msgDetails.get(AmazonsGameMessage.PLAYER_BLACK));
+			System.out.println("Game Start: Black Played by" + msgDetails.get(AmazonsGameMessage.PLAYER_BLACK));
 			System.out.println("Game Start: White Played by " + msgDetails.get(AmazonsGameMessage.PLAYER_WHITE));
 			System.out.println("Timer Started on Black");
 
 			if (((String) msgDetails.get("player-black")).equals(this.userName())) {
 				System.out.println("Game Start: " + msgDetails.get("player-black"));
+				playerType = 1;
+			}else {
+				playerType = 2;
 			}
 		} else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
-			System.out.println("DEBUG");
-			//System.out.println(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR));
 			
-			System.out.println("DEBUG");
+			System.out.println(msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR));
 			
-			ArrayList<Integer> gameS = (ArrayList<Integer>) msgDetails.get("game-state");
 			
 
 			gamegui.updateGameState(msgDetails);
@@ -161,6 +175,7 @@ public class COSC322Test extends GamePlayer {
 			System.out.println("Making Move: " + "QCurr = " + QCurr.toString() + " QNew = " + QNew.toString());
 			
 			this.getGameClient().sendMoveMessage(QCurr, QNew, Arrow);
+			updateLocalBoard(QCurr, QNew, Arrow);
 			gamegui.updateGameState(QCurr, QNew, Arrow);
 
 		} else if (messageType.equals("user-count-change")) {
@@ -177,9 +192,9 @@ public class COSC322Test extends GamePlayer {
 	private Move handleOpponentMove(Map<String, Object> msgDetails) {
 		int simCount = 1000;
 		// Get the current state from the message details
-		@SuppressWarnings("unchecked")
-		ArrayList<Integer> currentState = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
-		System.out.println(currentState.toString());
+		ArrayList<Integer> currentState = currentGameState;
+		System.out.println(currentGameState.toString());
+		System.out.println(currentGameState.size());
 		if( currentState == null) {
 			System.out.println("ITS FUCKING NULL");
 		}else {
@@ -460,14 +475,9 @@ public class COSC322Test extends GamePlayer {
 			this.Arrow = Arrow;
 		}
 
-		public static boolean isValidMove(ArrayList<Integer> arrowPos) {
+		public static boolean isValidMove(ArrayList<Integer> state) {
 			// Check if the new queen position overlaps with any arrow position
-			for (int i = 0; i < arrowPos.size(); i += 2) {
-				int arrowRow = arrowPos.get(i);
-				int arrowCol = arrowPos.get(i + 1);
-				if (QNew[0] == arrowRow && QNew[1] == arrowCol) {
-					return false; // Queen's new position overlaps with arrow position
-				}
+			int QNIndex 
 			}
 			return true; // Move is valid
 		}
