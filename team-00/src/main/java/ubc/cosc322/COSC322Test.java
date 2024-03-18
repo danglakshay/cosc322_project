@@ -111,7 +111,7 @@ public class COSC322Test extends GamePlayer {
 
 	@Override
 	public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
-		System.out.println("DEBUG");
+		
 		
 		// This method will be called by the GameClient when it receives a game-related
 		// message
@@ -202,7 +202,7 @@ public class COSC322Test extends GamePlayer {
 		}
 
 		// Create the root node of the search tree
-		Node rootNode = new Node(null, null, currentState);
+		Node rootNode = new Node(null, null, currentState, playerType);
 
 		// Perform Monte Carlo Tree Search (MCTS) to select the best move
 		for (int i = 0; i < simCount; i++) {
@@ -212,11 +212,11 @@ public class COSC322Test extends GamePlayer {
 				node = node.selectBestChild(); // Use UCB1 to select the best child node
 			}
 			// Now, node is a leaf node, expand it by selecting a random untried move
-			ArrayList<Move> untriedMoves = node.getUntriedMoves(currentState, node.currentPlayer);
+			ArrayList<Move> untriedMoves = node.getUntriedMoves(currentState);
 			if (!untriedMoves.isEmpty()) {
 				Move randomMove = untriedMoves.get(new Random().nextInt(untriedMoves.size()));
 				ArrayList<Integer> newState = node.simulateMove(currentState, randomMove);
-				Node childNode = new Node(node, randomMove, newState);
+				Node childNode = new Node(node, randomMove, newState, playerType);
 				node.addChild(childNode);
 			}
 			// Simulate a game from this leaf node to get a result
@@ -282,13 +282,14 @@ public class COSC322Test extends GamePlayer {
 		private int wins;
 		private int visits;
 
-		public Node(Node parent, Move move, ArrayList<Integer> state) {
+		public Node(Node parent, Move move, ArrayList<Integer> state, int currentPlayer) {
 			this.parent = parent;
 			this.move = move;
 			this.state = state;
 			this.children = new ArrayList<>();
 			this.wins = 0;
 			this.visits = 0;
+			this.currentPlayer = currentPlayer;
 		}
 
 		public boolean isLeaf() {
@@ -296,7 +297,7 @@ public class COSC322Test extends GamePlayer {
 		}
 
 		// Get the legal moves excluding positions where an arrow is present
-		public ArrayList<Move> getUntriedMoves(ArrayList<Integer> state, int currentPlayer) {
+		public ArrayList<Move> getUntriedMoves(ArrayList<Integer> state) {
 			ArrayList<Move> legalMoves = new ArrayList<>();
 			// Get all possible moves
 			ArrayList<Move> allMoves = getAllPossibleMoves(state, currentPlayer);
@@ -331,11 +332,11 @@ public class COSC322Test extends GamePlayer {
 		// Inside the selectBestChild method of the Node class
 		public Node selectBestChild() {
 			// If there are untried moves, return a node corresponding to one of these moves
-			List<Move> untriedMoves = getUntriedMoves(state, currentPlayer);
+			List<Move> untriedMoves = getUntriedMoves(state);
 			if (!untriedMoves.isEmpty()) {
 				// Randomly select one of the untried moves and return a new child node for it
 				Move randomMove = untriedMoves.get(new Random().nextInt(untriedMoves.size()));
-				Node childNode = new Node(this, randomMove, simulateMove(state, randomMove));
+				Node childNode = new Node(this, randomMove, simulateMove(state, randomMove), currentPlayer);
 				addChild(childNode);
 				return childNode;
 			}
@@ -477,8 +478,12 @@ public class COSC322Test extends GamePlayer {
 
 		public static boolean isValidMove(ArrayList<Integer> state) {
 			// Check if the new queen position overlaps with any arrow position
-			int QNIndex 
+			int QNIndex = (QNew[0]*11) + QNew[1];
+			
+			if(state.get(QNIndex) != 0) {		// if the queen's new position is not empty.
+				return false;
 			}
+			
 			return true; // Move is valid
 		}
 
