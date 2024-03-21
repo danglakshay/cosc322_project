@@ -48,6 +48,9 @@ public class COSC322Test extends GamePlayer {
 		COSC322Test player = new COSC322Test(args[0], args[1]);
 		//COSC322Test player = new COSC322Test();
 		
+		HumanPlayer human = new HumanPlayer();
+		
+		human.Go();
 
 		
 
@@ -108,6 +111,21 @@ public class COSC322Test extends GamePlayer {
 		currentGameState.set(QNIndex,  playerType);
 		currentGameState.set(AIndex,  3);
 	}
+	
+	public void updateLocalBoard(Map<String, Object> msgDetails) {
+		
+		ArrayList<Integer> QCurr = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
+		ArrayList<Integer> QNew = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
+		ArrayList<Integer> Arrow = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
+		
+		int QCIndex = (QCurr.get(0)*11) + QCurr.get(1);
+		int QNIndex = (QNew.get(0)*11) + QNew.get(1);
+		int AIndex = (Arrow.get(0)*11) + Arrow.get(1);
+		
+		currentGameState.set(QCIndex, 0);
+		currentGameState.set(QNIndex,  playerType);
+		currentGameState.set(AIndex,  3);
+	}
 
 	@Override
 	public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
@@ -143,6 +161,7 @@ public class COSC322Test extends GamePlayer {
 				System.out.println("Game Start: " + msgDetails.get("player-black"));
 				playerType = 1;
 			}else {
+				System.out.println("Game Start: " + msgDetails.get("player-white"));
 				playerType = 2;
 			}
 		} else if (messageType.equals(GameMessage.GAME_ACTION_MOVE)) {
@@ -152,7 +171,9 @@ public class COSC322Test extends GamePlayer {
 			
 
 			gamegui.updateGameState(msgDetails);
-			 
+			updateLocalBoard(msgDetails);
+			
+			
 			
 			Move bestMove = handleOpponentMove(msgDetails);
 			
@@ -195,16 +216,13 @@ public class COSC322Test extends GamePlayer {
 		ArrayList<Integer> currentState = currentGameState;
 		System.out.println(currentGameState.toString());
 		System.out.println(currentGameState.size());
-		if( currentState == null) {
-			System.out.println("ITS FUCKING NULL");
-		}else {
-			System.out.println("IT SHOULD BE BOARD");
-		}
+		
 
 		// Create the root node of the search tree
 		Node rootNode = new Node(null, null, currentState, playerType);
+		System.out.println(playerType == 1? "I AM BLACK PLAYER": "I AM WHITE PLAYER");
 
-		// Perform Monte Carlo Tree Search (MCTS) to select the best move
+		// Perform Monte-Carlo Tree Search (MCTS) to select the best move
 		for (int i = 0; i < simCount; i++) {
 			// Start from the root node and select child nodes until a leaf node is reached
 			Node node = rootNode;
@@ -405,7 +423,7 @@ public class COSC322Test extends GamePlayer {
 			for (int row = 0; row < ROWS; row++) {
 				for (int col = 0; col < COLS; col++) {
 					// Check if the current position is occupied by the current player
-					if (state.get(row * COLS + col) == getPlayerValue(state, player)) {
+					if (state.get(row * 11 + col) == player) {
 						// Check if the queen can move from this position
 						// For Amazons, queens can move in any direction until they hit another piece or
 						// the edge of the board
@@ -422,9 +440,13 @@ public class COSC322Test extends GamePlayer {
 								while (isValidPosition(newRow, newCol)) {
 									// Check if the new position is empty
 									if (isEmptyPosition(state, newRow, newCol)) {
-										// Add this move to the list of possible moves
-										possibleMoves.add(new Move(new int[] { row, col }, new int[] { newRow, newCol },
-												new int[] { 0, 0 }));
+										ArrayList<int[]> arrowPositions = getAllArrowPositions(state, new int[] {newRow, newCol});
+										
+										for (int[] position: arrowPositions) {
+											possibleMoves.add(new Move(new int[] { row, col }, new int[] { newRow, newCol },
+													new int[] { position[0], position[1] }));
+										}
+										
 									} else {
 										// The queen is blocked by another piece, so stop checking in this direction
 										break;
@@ -441,6 +463,39 @@ public class COSC322Test extends GamePlayer {
 
 			return possibleMoves;
 		}
+		
+		public ArrayList<int[]> getAllArrowPositions(ArrayList<Integer> state, int[] queenPos) {
+			
+			ArrayList<int[]> arrowPositions = new ArrayList<>();
+			
+			for( int row = -1; row <= 1; row++) {
+				for(int col = -1; col <= 1; col++) {
+					
+					if(row == 0 && col == 0) {
+						continue;
+					}
+					
+					int newRow = queenPos[0] + row;
+					int newCol = queenPos[1] + col;
+					while(isValidPosition(newRow, newCol)) {
+						if (isEmptyPosition(state, newRow, newCol)) {
+							arrowPositions.add(new int[] {newRow, newCol});
+							
+						}else {
+							// The queen is blocked by another piece, so stop checking in this direction
+							break;
+						}
+						// Move to the next position in the same direction
+						newRow += row;
+						newCol += col;
+					}
+					
+					
+				}
+			}
+			return arrowPositions;
+			
+		}
 
 		// Define getPlayerValue method
 		private int getPlayerValue(ArrayList<Integer> state, int player) {
@@ -451,17 +506,14 @@ public class COSC322Test extends GamePlayer {
 		// Helper method to check if a position is valid (within the bounds of the
 		// board)
 		private boolean isValidPosition(int row, int col) {
-			return row >= 0 && row < ROWS && col >= 0 && col < COLS;
+			return row > 0 && row < ROWS && col > 0 && col < COLS;
 		}
 
 		// Helper method to check if a position is empty (not occupied by any piece)
 		public boolean isEmptyPosition(ArrayList<Integer> state, int row, int col) {
-			// Check if the position is within the bounds of the board
-			if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
-				return false; // Position is out of bounds
-			}
+			
 			// Check if the position is empty
-			return state.get(row * COLS + col) == EMPTY;
+			return state.get(row * 11 + col) == EMPTY;
 		}
 	}
 
