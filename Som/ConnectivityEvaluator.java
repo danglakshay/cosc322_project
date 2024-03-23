@@ -14,7 +14,7 @@ public class ConnectivityEvaluator {
         for (int i = 0; i < BoardUtils.BOARD_SIZE; i++) {
             for (int j = 0; j < BoardUtils.BOARD_SIZE; j++) {
                 if (board[i][j] == player && !visited[i][j]) {
-                    int territorySize = bfsConnectivity(board, i, j, visited);
+                    int territorySize = bfsConnectivity(board, i, j, visited, player);
                     connectivityScore += Math.pow(territorySize, 2); // Reward larger connected territories
                 }
             }
@@ -23,7 +23,7 @@ public class ConnectivityEvaluator {
         return connectivityScore;
     }
 
-    private static int bfsConnectivity(int[][] board, int startX, int startY, boolean[][] visited) {
+    private static int bfsConnectivity(int[][] board, int startX, int startY, boolean[][] visited, int player) {
         Queue<int[]> queue = new LinkedList<>();
         queue.offer(new int[]{startX, startY});
         visited[startX][startY] = true;

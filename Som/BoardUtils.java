@@ -32,6 +32,15 @@ public class BoardUtils {
 
         return board;
     }
+    
+    public static void printBoard(int[][] board) {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                System.out.print(board[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
 
  //The board is initialized with four white amazons, four black amazons, and a few arrows placed on the board. The constants EMPTY, WHITE_AMAZON, BLACK_AMAZON, and ARROW are used to represent the different types of cells on the board. We can adjust the placement of the pieces and the number of arrows as needed for our tests.
 

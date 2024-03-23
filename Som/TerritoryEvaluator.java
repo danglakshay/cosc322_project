@@ -1,3 +1,6 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class TerritoryEvaluator {
  //This file calculates the territory score, focusing on the control of the board.
     private static final int[][] DIRECTIONS = {

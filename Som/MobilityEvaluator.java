@@ -74,8 +74,13 @@ public class MobilityEvaluator {
                 for (int[] oppDirection : DIRECTIONS) {
                     int oppX = nextX + oppDirection[0];
                     int oppY = nextY + oppDirection[1];
+                    // Check for a line of opponent's arrows that could block the amazon's movement
+                    while (BoardUtils.isValidPosition(oppX, oppY) && board[oppX][oppY] == BoardUtils.ARROW) {
+                        oppX += oppDirection[0];
+                        oppY += oppDirection[1];
+                    }
                     if (BoardUtils.isValidPosition(oppX, oppY) && board[oppX][oppY] == opponent) {
-                        return true; // The move is vulnerable to being blocked
+                        return true; // The move is vulnerable to being blocked by a line of arrows
                     }
                 }
             }

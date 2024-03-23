@@ -6,7 +6,7 @@ public class AmazonEvaluation {
         this.board = board;
     }
 
-    public double evaluate(int player) {
+    public static double evaluate(int[][] board, int player) {
         double mobilityScore = MobilityEvaluator.calculateMobilityScore(board, player);
         double territoryScore = TerritoryEvaluator.calculateTerritoryScore(board, player);
         double connectivityScore = ConnectivityEvaluator.calculateConnectivityScore(board, player);
@@ -19,7 +19,7 @@ public class AmazonEvaluation {
     public static void main(String[] args) {
         int[][] exampleBoard = BoardUtils.createExampleBoard();
         AmazonEvaluation evaluation = new AmazonEvaluation(exampleBoard);
-        double score = evaluation.evaluate(1); // Evaluate the position for player 1 (white)
+        double score = AmazonEvaluation.evaluate(exampleBoard, BoardUtils.WHITE_AMAZON); // Evaluate the position for player 1
         System.out.println("Evaluation score for player 1: " + score);
     }
 }
