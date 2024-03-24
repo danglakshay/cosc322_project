@@ -86,7 +86,18 @@ public class COSC322Test1 extends GamePlayer{
         int[] QNew = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
         int[] Arrow = (int[]) msgDetails.get(AmazonsGameMessage.ARROW_POS);
         board = game.updateBoard(QCurr, QNew, Arrow, playerType);
-        //Move move = new Move(QCurr, QNew, Arrow);
+        Move move = new Move(QCurr, QNew, Arrow, board);
+        
+        //Checks if opponents move is valid
+        if(move.isValidMove()) {
+        	game.printBoard(board);
+        	System.out.println("VAlID MOVE -- CALCULATING NEXT MOVE");
+        	//CALL monteCarlo HERE TO CALUCLATE MOVE () and return it
+        	//(Implement start of timer in monteCarlo when it starts calculating move -- 25 seconds to get best move)
+        	//SEND MOVE TO SERVER
+        }else {
+        	System.out.println("INVALID MOVE -- WE WIN SUCKERS");
+        }
 		
 	}
 
