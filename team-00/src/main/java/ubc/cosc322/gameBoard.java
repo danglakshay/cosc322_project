@@ -1,5 +1,7 @@
 package ubc.cosc322;
 
+import java.util.ArrayList;
+
 public class gameBoard {
 	public static final int BOARD_SIZE = 10;
 	public static final int EMPTY = 0;
@@ -8,7 +10,8 @@ public class gameBoard {
 	public static final int ARROW = 3;
 	static int[][] board = new int[BOARD_SIZE][BOARD_SIZE];
 	
-	public boolean isEmpty(int[][] board) {
+	
+	public boolean isEmpty() {
 	    for (int i = 0; i < BOARD_SIZE; i++) {
 	        for (int j = 0; j < BOARD_SIZE; j++) {
 	            if (board[i][j] != EMPTY) {
@@ -19,7 +22,7 @@ public class gameBoard {
 	    return true;
 	}
 
-	public int[][] createBoard() {
+	public void createBoard() {
 		// Place white amazons
 		board[0][3] = WHITE_AMAZON;
 		board[0][6] = WHITE_AMAZON;
@@ -31,11 +34,9 @@ public class gameBoard {
 		board[6][9] = BLACK_AMAZON;
 		board[9][3] = BLACK_AMAZON;
 		board[9][6] = BLACK_AMAZON;
-
-		return board;
 	}
 	
-	public int[][] updateBoard(int[] QCurr, int[] QNew, int[] Arrow, int playerType) {
+	public void updateBoard(int[] QCurr, int[] QNew, int[] Arrow, int playerType) {
 		
 		board[QCurr[0]-1][QCurr[1]-1] = EMPTY;
 		if(playerType == 1) {
@@ -45,11 +46,10 @@ public class gameBoard {
 		}
 		board[Arrow[0]-1][Arrow[1]-1] = ARROW;
 
-		return board;
 	}
 	
 
-	public void printBoard(int[][] board) {
+	public void printBoard() {
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
 				System.out.print(board[i][j] + " ");
@@ -57,5 +57,10 @@ public class gameBoard {
 			System.out.println();
 		}
 	}
+	
+	public int getCellValue(int i, int j) {
+		return board[i][j];
+    }
+	
 
 }

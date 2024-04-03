@@ -1,6 +1,7 @@
 package ubc.cosc322;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -20,15 +21,14 @@ public class COSC322Test1 extends GamePlayer{
     private String passwd = null;
     
     public gameBoard game = new gameBoard();
-    int[][] board = new int[10][10];
     
     ArrayList<Integer> currentGameState;
 	public int playerType;
 
 	public static void main(String[] args) {
-		COSC322Test player = new COSC322Test("hi", "hi");
-		HumanPlayer player2 = new HumanPlayer();
-		player2.Go();
+		COSC322Test1 player = new COSC322Test1("hi", "hi");
+		//HumanPlayer player2 = new HumanPlayer();
+		//player2.Go();
     	
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -44,7 +44,7 @@ public class COSC322Test1 extends GamePlayer{
 
 	}
 	
-    public void COSC322Test(String userName, String passwd) {
+    public COSC322Test1(String userName, String passwd) {
     	this.userName = userName;
     	this.passwd = passwd;  	
     	this.gamegui = new BaseGameGUI(this);
@@ -85,16 +85,19 @@ public class COSC322Test1 extends GamePlayer{
 		int[] QCurr = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
         int[] QNew = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
         int[] Arrow = (int[]) msgDetails.get(AmazonsGameMessage.ARROW_POS);
-        board = game.updateBoard(QCurr, QNew, Arrow, playerType);
-        Move move = new Move(QCurr, QNew, Arrow, board);
+        game.updateBoard(QCurr, QNew, Arrow, playerType);
+        Move move = new Move(QCurr, QNew, Arrow, game, playerType);
         
         //Checks if opponents move is valid
         if(move.isValidMove()) {
-        	game.printBoard(board);
+        	game.printBoard();
         	System.out.println("VAlID MOVE -- CALCULATING NEXT MOVE");
-        	//CALL monteCarlo HERE TO CALUCLATE MOVE () and return it
-        	//(Implement start of timer in monteCarlo when it starts calculating move -- 25 seconds to get best move)
-        	//SEND MOVE TO SERVER
+        	monteCarlo player = new monteCarlo();
+        	Move newMove = player.move();
+        	game.updateBoard(newMove.getQCurr(), newMove.getQNew(), newMove.getArrow(),newMove.getPlayerType());
+            game.printBoard();
+            gamegui.updateGameState(convert(newMove.getQCurr()), convert(newMove.getQNew()),convert(newMove.getArrow()));
+            gameClient.sendMoveMessage(convert(newMove.getQCurr()), convert(newMove.getQNew()), convert(newMove.getArrow()));
         }else {
         	System.out.println("INVALID MOVE -- WE WIN SUCKERS");
         }
@@ -119,9 +122,16 @@ public class COSC322Test1 extends GamePlayer{
 			currentGameState = (ArrayList<Integer>) msgDetails.get("game-state");
 			gamegui.setGameState(currentGameState);
 		}
-		if(game.isEmpty(board))
-			board = game.createBoard();
+		if(game.isEmpty())
+			game.createBoard();
 		
+	}
+	
+	private ArrayList<Integer> convert(int[] array) {
+		ArrayList<Integer> send = new ArrayList<Integer>();
+		send.add(array[0]);
+		send.add(array[1]);
+		return send;
 	}
 	
 	

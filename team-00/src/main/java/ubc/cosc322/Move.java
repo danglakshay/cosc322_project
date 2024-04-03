@@ -8,14 +8,70 @@ public class Move {
 	private static int[] qCurr;
     private static int[] qNew;
     private static int[] arrow;
-    private static int[][] board;
+    private static gameBoard board;
+    private static int playerType;
 
-    public Move(int[] queenCurrentPosition, int[] queenNewPosition, int[] arrowPosition, int[][] board) {
+    public Move(int[] queenCurrentPosition, int[] queenNewPosition, int[] arrowPosition, gameBoard board, int playerType) {
         this.qCurr = queenCurrentPosition;
         this.qNew = queenNewPosition;
         this.arrow = arrowPosition;
         this.board = board;
+        this.playerType = playerType;
     }
+    
+    public int getOpponent() {
+		return playerType == 2 ? 1 : 2;
+	}
+    
+	public static ArrayList<Move> getActions(gameBoard board) {
+		ArrayList<Move> list = new ArrayList<>();
+		// Double array list initialized to store queen current positions
+		
+		ArrayList<int[]> allQueens = getAllQueenCurrents(board);
+
+		while (!allQueens.isEmpty()) {
+			// Iterating through the allQueens arrayList removing them one by one.
+			int[] queenCurrent = allQueens.remove(0);
+
+			// Creating a double array list of all possible moves for the current queen.
+			ArrayList<int[]> allQueenTargets = allPossibleMoves(queenCurrent[0], queenCurrent[1], board);
+
+			while (!allQueenTargets.isEmpty()) {
+				// Iterating through all the possible moves and removing them one by one
+				int[] queenTarget = allQueenTargets.remove(0);
+
+				// Creating a double array list of all possible arrow moves for the current queen target position
+				ArrayList<int[]> allArrowTargets = allPossibleMoves(queenCurrent[0], queenCurrent[1], board);
+
+				// Add the queen's original position as a potential arrow target
+				allArrowTargets.add(queenCurrent);
+
+				while (!allArrowTargets.isEmpty()) {
+					// Iterating through all the arrow target locations and removing them.
+					int[] arrowTarget = allArrowTargets.remove(0);
+
+					// Adding the current arrow target, the queen target position, and the current queen to the list of AmazonsActions
+					Move newAction = new Move(queenCurrent, queenTarget, arrowTarget,board,playerType);
+					list.add(newAction);
+				}
+			}
+		}
+		return list;
+	}
+	private static ArrayList<int[]> getAllQueenCurrents(gameBoard board) {
+		ArrayList<int[]> queenCurrents = new ArrayList<>();
+		// Iterating through the entire board finding each queen position.
+		for (int i = 1; i <= 10; i++) {
+			for (int j = 1; j <= 10; j++) {
+				int[] position = new int[]{i, j};
+				// The queen position value can be 1 or 2 depending on if our queens are white or black.
+				if (board.getCellValue(i, j) == playerType) {
+					queenCurrents.add(position);
+				}
+			}
+		}
+		return queenCurrents;
+	}
     
 	public static boolean isValidPosition(int x, int y) {
 		return x >= 0 && x < 10 && y >= 0 && y < 10;
@@ -23,16 +79,20 @@ public class Move {
 	
 	public static boolean isValidMove() {
 		//Checks if new position of queen is in all possible moves of old position of queen
-		ArrayList<int[]> allPossibleMoves = allPossibleMoves();
-		if(allPossibleMoves.contains(qNew)) {
-			return true;
+		ArrayList<int[]> allPossibleQueenMoves = allPossibleMoves(getQNew()[0],getQNew()[1],board);
+		if(allPossibleQueenMoves.contains(qNew)) {
+			board.updateBoard(qCurr, qNew, arrow, playerType);
+			ArrayList<int[]> allPossibleArrowMoves = allPossibleMoves(getArrow()[0],getArrow()[1],board);
+			if(allPossibleArrowMoves.contains(arrow)){
+				return true;
+			}else {
+				return false;
+			}
 		}
 	    return false;
 	}
 	
-	public static ArrayList<int[]> allPossibleMoves() {
-		int x = qCurr[0];
-		int y = qCurr[1];
+	public static ArrayList<int[]> allPossibleMoves(int x, int y , gameBoard board) {
 		ArrayList<int[]> targets = new ArrayList<>();
 
 		boolean isUpBlocked = false;
@@ -52,7 +112,7 @@ public class Move {
 			
 
 			if (!isUpBlocked) {
-				if (up > 9 || board[x][up] != 0) {
+				if (up > 9 || board.getCellValue(x, up) != 0) {
 					isUpBlocked = true;
 				} else {
 					targets.add(new int[]{x, up});
@@ -60,7 +120,7 @@ public class Move {
 			}
 
 			if (!isDownBlocked) {
-				if (down < 0 || board[x][down] != 0) {
+				if (down < 0 || board.getCellValue(x, down) != 0) {
 					isDownBlocked = true;
 				} else {
 					targets.add(new int[]{x, down});
@@ -68,7 +128,7 @@ public class Move {
 			}
 
 			if (!isRightBlocked) {
-				if (right > 9 || board[right][y] != 0) {
+				if (right > 9 || board.getCellValue(right, y) != 0) {
 					isRightBlocked = true;
 				} else {
 					targets.add(new int[]{right, y});
@@ -76,7 +136,7 @@ public class Move {
 			}
 
 			if (!isLeftBlocked) {
-				if (left < 0 || board[left][y] != 0) {
+				if (left < 0 || board.getCellValue(left, y) != 0) {
 					isLeftBlocked = true;
 				} else {
 					targets.add(new int[]{left, y});
@@ -84,7 +144,7 @@ public class Move {
 			}
 
 			if (!isRightUpBlocked) {
-				if (right > 9 || up > 9 || board[right][up] != 0) {
+				if (right > 9 || up > 9 || board.getCellValue(right, up) != 0) {
 					isRightUpBlocked = true;
 				} else {
 					targets.add(new int[]{right, up});
@@ -92,7 +152,7 @@ public class Move {
 			}
 
 			if (!isRightDownBlocked) {
-				if (right > 9 || down < 1 || board[right][down] != 0) {
+				if (right > 9 || down < 1 || board.getCellValue(right, down) != 0) {
 					isRightDownBlocked = true;
 				} else {
 					targets.add(new int[]{right, down});
@@ -100,7 +160,7 @@ public class Move {
 			}
 
 			if (!isLeftUpBlocked) {
-				if (left < 0 || up > 9 || board[left][up] != 0) {
+				if (left < 0 || up > 9 || board.getCellValue(left, up) != 0) {
 					isLeftUpBlocked = true;
 				} else {
 					targets.add(new int[]{left, up});
@@ -108,7 +168,7 @@ public class Move {
 			}
 
 			if (!isLeftDownBlocked) {
-				if (left < 0 || down < 0 || board[left][down] != 0) {
+				if (left < 0 || down < 0 || board.getCellValue(left, down) != 0) {
 					isLeftDownBlocked = true;
 				} else {
 					targets.add(new int[]{left, down});
@@ -118,6 +178,45 @@ public class Move {
 
 		return targets;
 	}
+	
+    public int[] getQCurr() {
+        return qCurr;
+    }
 
+    public void setQCurr(int[] qCurr) {
+        this.qCurr = qCurr;
+    }
 
+    public static int[] getQNew() {
+        return qNew;
+    }
+
+    public void setQNew(int[] qNew) {
+        this.qNew = qNew;
+    }
+
+    public static int[] getArrow() {
+        return arrow;
+    }
+
+    public void setArrow(int[] arrow) {
+        this.arrow = arrow;
+    }
+
+    public gameBoard getBoard() {
+        return board;
+    }
+
+    public void setBoard(gameBoard board) {
+        this.board = board;
+    }
+    
+    public int getPlayerType() {
+        return playerType;
+    }
+
+    
+    public void setPlayerType(int playerType) {
+        this.playerType = playerType;
+    }
 }
