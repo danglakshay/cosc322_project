@@ -5,23 +5,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Move {
-	private static int[] qCurr;
-    private static int[] qNew;
-    private static int[] arrow;
-    private static gameBoard board;
-    private static int playerType;
+	public int[] qCurr;
+    public int[] qNew;
+    public int[] arrow;
 
-    public Move(int[] queenCurrentPosition, int[] queenNewPosition, int[] arrowPosition, gameBoard board, int playerType) {
+    public Move(int[] queenCurrentPosition, int[] queenNewPosition, int[] arrowPosition) {
         this.qCurr = queenCurrentPosition;
         this.qNew = queenNewPosition;
         this.arrow = arrowPosition;
-        this.board = board;
-        this.playerType = playerType;
     }
-    
-    public int getOpponent() {
-		return playerType == 2 ? 1 : 2;
-	}
     
 	public static ArrayList<Move> getActions(gameBoard board) {
 		ArrayList<Move> list = new ArrayList<>();
@@ -51,7 +43,7 @@ public class Move {
 					int[] arrowTarget = allArrowTargets.remove(0);
 
 					// Adding the current arrow target, the queen target position, and the current queen to the list of AmazonsActions
-					Move newAction = new Move(queenCurrent, queenTarget, arrowTarget,board,playerType);
+					Move newAction = new Move(queenCurrent, queenTarget, arrowTarget);
 					list.add(newAction);
 				}
 			}
@@ -61,11 +53,11 @@ public class Move {
 	private static ArrayList<int[]> getAllQueenCurrents(gameBoard board) {
 		ArrayList<int[]> queenCurrents = new ArrayList<>();
 		// Iterating through the entire board finding each queen position.
-		for (int i = 1; i <= 10; i++) {
-			for (int j = 1; j <= 10; j++) {
+		for (int i = 1; i < 10; i++) {
+			for (int j = 1; j <10; j++) {
 				int[] position = new int[]{i, j};
 				// The queen position value can be 1 or 2 depending on if our queens are white or black.
-				if (board.getCellValue(i, j) == playerType) {
+				if (board.getCellValue(i, j) == board.playerTypeLocal) {
 					queenCurrents.add(position);
 				}
 			}
@@ -77,20 +69,20 @@ public class Move {
 		return x >= 0 && x < 10 && y >= 0 && y < 10;
 	}
 	
-	public static boolean isValidMove() {
-		//Checks if new position of queen is in all possible moves of old position of queen
-		ArrayList<int[]> allPossibleQueenMoves = allPossibleMoves(getQNew()[0],getQNew()[1],board);
-		if(allPossibleQueenMoves.contains(qNew)) {
-			board.updateBoard(qCurr, qNew, arrow, playerType);
-			ArrayList<int[]> allPossibleArrowMoves = allPossibleMoves(getArrow()[0],getArrow()[1],board);
-			if(allPossibleArrowMoves.contains(arrow)){
-				return true;
-			}else {
-				return false;
-			}
-		}
-	    return false;
-	}
+//	public boolean isValidMove() {
+//		//Checks if new position of queen is in all possible moves of old position of queen
+//		ArrayList<int[]> allPossibleQueenMoves = allPossibleMoves(getQCurr()[0],getQCurr()[1],board);
+//		if(allPossibleQueenMoves.contains(qNew)) {
+//			board.updateBoard(qCurr, qNew, arrow, board.playerType);
+//			ArrayList<int[]> allPossibleArrowMoves = allPossibleMoves(getQNew()[0],getQNew()[1],board);
+//			if(allPossibleArrowMoves.contains(arrow)){
+//				return true;
+//			}else {
+//				return false;
+//			}
+//		}
+//	    return false;
+//	}
 	
 	public static ArrayList<int[]> allPossibleMoves(int x, int y , gameBoard board) {
 		ArrayList<int[]> targets = new ArrayList<>();
@@ -178,45 +170,5 @@ public class Move {
 
 		return targets;
 	}
-	
-    public int[] getQCurr() {
-        return qCurr;
-    }
-
-    public void setQCurr(int[] qCurr) {
-        this.qCurr = qCurr;
-    }
-
-    public static int[] getQNew() {
-        return qNew;
-    }
-
-    public void setQNew(int[] qNew) {
-        this.qNew = qNew;
-    }
-
-    public static int[] getArrow() {
-        return arrow;
-    }
-
-    public void setArrow(int[] arrow) {
-        this.arrow = arrow;
-    }
-
-    public gameBoard getBoard() {
-        return board;
-    }
-
-    public void setBoard(gameBoard board) {
-        this.board = board;
-    }
     
-    public int getPlayerType() {
-        return playerType;
-    }
-
-    
-    public void setPlayerType(int playerType) {
-        this.playerType = playerType;
-    }
 }

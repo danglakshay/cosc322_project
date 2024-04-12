@@ -6,14 +6,17 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class monteCarlo {
 
-	protected gameBoard board = new gameBoard();
-	//protected Move actionFactory = new Move();
+	protected gameBoard board;
 
 	private final long MAX_RUNTIME = 5000;
 	private final int NUM_THREADS = 4;
 
 
 	private TreeNode root;
+	
+	public monteCarlo(gameBoard board) {
+		this.board = board;
+	}
 
 	protected Move move() {
 		root = new TreeNode(board);
@@ -113,7 +116,7 @@ public class monteCarlo {
 
 				// Check if we reached a terminal state while expanding
 				if (child == null) {
-					backpropagate(current,current.action.getOpponent());
+					backpropagate(current,current.state.getOpponent());
 					continue;
 				}
 
@@ -126,7 +129,7 @@ public class monteCarlo {
 	}
 	
 	private int playthrough(TreeNode current) {
-		gameBoard state = current.state;
+		gameBoard state = current.state.copy();
 		int winner = -1;
 
 		while (winner < 0) {
@@ -134,7 +137,7 @@ public class monteCarlo {
 
 			// Check win conditions
 			if (actions.size() == 0) {
-				return actions.get(0).getOpponent();
+				return state.getOpponent();
 			}
 
 			// Pick a random move
@@ -142,8 +145,8 @@ public class monteCarlo {
 			Move move = actions.get(moveIndex);
 
 			// Apply the selected move to the state
-			state.updateBoard(move.getQCurr(), move.getQNew(), move.getArrow(), move.getPlayerType());
-			move.setPlayerType(move.getOpponent());
+			state.updateBoard(move.qCurr, move.qNew, move.arrow);
+			state.playerTypeLocal = state.getOpponent();
 		}
 
 		return winner;
@@ -151,7 +154,7 @@ public class monteCarlo {
 	
 	private void backpropagate(TreeNode current, int winner) {
 		while (current != null) {
-			if (current.action.getPlayerType() == winner) {
+			if (current.state.playerTypeLocal == winner) {
 				current.wins++;
 			}
 			current.visits++;
@@ -216,11 +219,9 @@ class TreeNode {
 		for (int i = 0; i < actions.size(); i++) {
 			Move childAction = actions.get(i);
 
-			gameBoard childState = state;
-			childAction.setPlayerType(childAction.getPlayerType() == 1 ? 2 : 1); // Change if not playing AI with
-																					// correct colour
-			childState.updateBoard(childAction.getQCurr(), childAction.getQNew(), childAction.getArrow(),
-					childAction.getPlayerType());
+			gameBoard childState = state.copy();
+			childState.playerTypeLocal = state.playerTypeLocal == 1 ? 2 : 1;
+			childState.updateBoard(childAction.qCurr, childAction.qNew, childAction.arrow);
 
 			// Add each node as a child of this node
 			children.add(new TreeNode(childState, childAction, this));

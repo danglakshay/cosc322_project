@@ -20,15 +20,15 @@ public class COSC322Test1 extends GamePlayer{
     private String userName = null;
     private String passwd = null;
     
-    public gameBoard game = new gameBoard();
+    public static gameBoard game = new gameBoard();
     
     ArrayList<Integer> currentGameState;
 	public int playerType;
 
 	public static void main(String[] args) {
 		COSC322Test1 player = new COSC322Test1("hi", "hi");
-		//HumanPlayer player2 = new HumanPlayer();
-		//player2.Go();
+		HumanPlayer player2 = new HumanPlayer();
+		player2.Go();
     	
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -82,25 +82,27 @@ public class COSC322Test1 extends GamePlayer{
 			gamegui.updateGameState(msgDetails);
 		}
 		
-		int[] QCurr = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
-        int[] QNew = (int[]) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
-        int[] Arrow = (int[]) msgDetails.get(AmazonsGameMessage.ARROW_POS);
-        game.updateBoard(QCurr, QNew, Arrow, playerType);
-        Move move = new Move(QCurr, QNew, Arrow, game, playerType);
+		ArrayList <Integer> QCurr1= (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
+		ArrayList <Integer> QNew1 = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
+		ArrayList <Integer> Arrow1 = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
+        
+        int[] QCurr = boardConverter(QCurr1);
+        int[] QNew = boardConverter(QNew1);
+        int[] Arrow = boardConverter(Arrow1);
+        
+        
+        game.updateBoard(QCurr, QNew, Arrow);
         
         //Checks if opponents move is valid
-        if(move.isValidMove()) {
+        //if(move.isValidMove()) {
         	game.printBoard();
         	System.out.println("VAlID MOVE -- CALCULATING NEXT MOVE");
-        	monteCarlo player = new monteCarlo();
+        	monteCarlo player = new monteCarlo(game);
         	Move newMove = player.move();
-        	game.updateBoard(newMove.getQCurr(), newMove.getQNew(), newMove.getArrow(),newMove.getPlayerType());
-            game.printBoard();
-            gamegui.updateGameState(convert(newMove.getQCurr()), convert(newMove.getQNew()),convert(newMove.getArrow()));
-            gameClient.sendMoveMessage(convert(newMove.getQCurr()), convert(newMove.getQNew()), convert(newMove.getArrow()));
-        }else {
-        	System.out.println("INVALID MOVE -- WE WIN SUCKERS");
-        }
+        	sendMove(newMove);
+//        }else {
+//        	System.out.println("INVALID MOVE -- WE WIN SUCKERS");
+//        }
 		
 	}
 
@@ -113,6 +115,12 @@ public class COSC322Test1 extends GamePlayer{
 			playerType = 1;
 		}else {
 			playerType = 2;
+		}
+		
+		if(playerType==1) {
+        	monteCarlo player = new monteCarlo(game);
+        	Move newMove = player.move();
+        	sendMove(newMove);
 		}
 		
 	}
@@ -129,9 +137,21 @@ public class COSC322Test1 extends GamePlayer{
 	
 	private ArrayList<Integer> convert(int[] array) {
 		ArrayList<Integer> send = new ArrayList<Integer>();
-		send.add(array[0]);
-		send.add(array[1]);
+		send.add(array[1]+1);
+		send.add(array[0]+1);
 		return send;
+	}
+	
+	private int[] boardConverter(ArrayList <Integer> pos) {
+		int [] converted = new int [] {pos.get(1)-1,pos.get(0)-1};
+		return converted;
+	}
+	
+	private void sendMove(Move newMove) {
+		game.updateBoard(newMove.qCurr, newMove.qNew, newMove.arrow);
+        game.printBoard();
+        gamegui.updateGameState(convert(newMove.qCurr), convert(newMove.qNew),convert(newMove.arrow));
+        gameClient.sendMoveMessage(convert(newMove.qCurr), convert(newMove.qNew), convert(newMove.arrow));
 	}
 	
 	
