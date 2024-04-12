@@ -27,6 +27,10 @@ public class Move {
 
 			// Creating a double array list of all possible moves for the current queen.
 			ArrayList<int[]> allQueenTargets = allPossibleMoves(queenCurrent[0], queenCurrent[1], board);
+			
+			
+			if(allQueenTargets.size()!=0)
+				System.out.println(allQueenTargets.size());
 
 			while (!allQueenTargets.isEmpty()) {
 				// Iterating through all the possible moves and removing them one by one
@@ -53,8 +57,8 @@ public class Move {
 	private static ArrayList<int[]> getAllQueenCurrents(gameBoard board) {
 		ArrayList<int[]> queenCurrents = new ArrayList<>();
 		// Iterating through the entire board finding each queen position.
-		for (int i = 1; i < 10; i++) {
-			for (int j = 1; j <10; j++) {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j <10; j++) {
 				int[] position = new int[]{i, j};
 				// The queen position value can be 1 or 2 depending on if our queens are white or black.
 				if (board.getCellValue(i, j) == board.playerTypeLocal) {
@@ -107,6 +111,7 @@ public class Move {
 				if (up > 9 || board.getCellValue(x, up) != 0) {
 					isUpBlocked = true;
 				} else {
+					System.out.println("hi");
 					targets.add(new int[]{x, up});
 				}
 			}
@@ -144,7 +149,7 @@ public class Move {
 			}
 
 			if (!isRightDownBlocked) {
-				if (right > 9 || down < 1 || board.getCellValue(right, down) != 0) {
+				if (right > 9 || down < 0 || board.getCellValue(right, down) != 0) {
 					isRightDownBlocked = true;
 				} else {
 					targets.add(new int[]{right, down});
@@ -167,7 +172,7 @@ public class Move {
 				}
 			}
 		}
-
+		
 		return targets;
 	}
     

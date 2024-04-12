@@ -3,8 +3,8 @@ package ubc.cosc322;
 public class gameBoard {
 	public static final int BOARD_SIZE = 10;
 	public static final int EMPTY = 0;
-	public static final int WHITE_AMAZON = 1;
-	public static final int BLACK_AMAZON = 2;
+	public static final int WHITE_AMAZON = 2;
+	public static final int BLACK_AMAZON = 1;
 	public static final int ARROW = 3;
 	int[][] board = new int[BOARD_SIZE][BOARD_SIZE];
 	public int playerTypeLocal = -1;

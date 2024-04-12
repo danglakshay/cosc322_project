@@ -23,7 +23,7 @@ public class COSC322Test1 extends GamePlayer{
     public static gameBoard game = new gameBoard();
     
     ArrayList<Integer> currentGameState;
-	public int playerType;
+	//public int playerType;
 
 	public static void main(String[] args) {
 		COSC322Test1 player = new COSC322Test1("hi", "hi");
@@ -112,12 +112,12 @@ public class COSC322Test1 extends GamePlayer{
         System.out.println("Timer Started on Black");
 
 		if (((String) msgDetails.get("player-black")).equals(this.userName())) {
-			playerType = 1;
+			game.playerTypeLocal = 1;
 		}else {
-			playerType = 2;
+			game.playerTypeLocal = 2;
 		}
 		
-		if(playerType==1) {
+		if(game.playerTypeLocal==1) {
         	monteCarlo player = new monteCarlo(game);
         	Move newMove = player.move();
         	sendMove(newMove);
