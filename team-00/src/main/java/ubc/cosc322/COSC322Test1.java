@@ -21,9 +21,9 @@ public class COSC322Test1 extends GamePlayer{
     private String passwd = null;
     
     public static gameBoard game = new gameBoard();
-    
     ArrayList<Integer> currentGameState;
-	//public int playerType;
+    
+    public static int numMoves = 0;
 
 	public static void main(String[] args) {
 		COSC322Test1 player = new COSC322Test1("hi", "hi");
@@ -92,14 +92,16 @@ public class COSC322Test1 extends GamePlayer{
         
         
         game.updateBoard(QCurr, QNew, Arrow);
+        Move oppMove = new Move(QCurr, QNew, Arrow);
+        numMoves++;
         
-        //Checks if opponents move is valid
-        //if(move.isValidMove()) {
+//        if(isValidMove(oppMove)) {
         	game.printBoard();
         	System.out.println("VAlID MOVE -- CALCULATING NEXT MOVE");
-        	monteCarlo player = new monteCarlo(game);
+        	monteCarlo player = new monteCarlo(game,numMoves);
         	Move newMove = player.move();
         	sendMove(newMove);
+        	numMoves++;
 //        }else {
 //        	System.out.println("INVALID MOVE -- WE WIN SUCKERS");
 //        }
@@ -118,9 +120,10 @@ public class COSC322Test1 extends GamePlayer{
 		}
 		
 		if(game.playerTypeLocal==1) {
-        	monteCarlo player = new monteCarlo(game);
+        	monteCarlo player = new monteCarlo(game,numMoves);
         	Move newMove = player.move();
         	sendMove(newMove);
+        	numMoves++;
 		}
 		
 	}
@@ -153,6 +156,15 @@ public class COSC322Test1 extends GamePlayer{
         gamegui.updateGameState(convert(newMove.qCurr), convert(newMove.qNew),convert(newMove.arrow));
         gameClient.sendMoveMessage(convert(newMove.qCurr), convert(newMove.qNew), convert(newMove.arrow));
 	}
+	
+//	public boolean isValidMove(Move oppMov) {
+//		ArrayList<Move> allPossibleMoves = Move.getActions(game);
+//		if(allPossibleMoves.contains(oppMov)) {
+//			return true;
+//		}
+//		return false;
+//		
+//	}
 	
 	
 

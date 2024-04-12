@@ -1,6 +1,7 @@
 package ubc.cosc322;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -8,51 +9,57 @@ public class monteCarlo {
 
 	protected gameBoard board;
 
-	private final long MAX_RUNTIME = 5000;
-	private final int NUM_THREADS = 4;
-
+	private final long runtime = 5000;
+	private final int threadCts = 4;
+	private int numMoves;
 
 	private TreeNode root;
 	
-	public monteCarlo(gameBoard board) {
+	public monteCarlo(gameBoard board, int numMoves) {
 		this.board = board;
+		this.numMoves = numMoves;
 	}
 
 	protected Move move() {
+		if(numMoves<15) {
+			ArrayList<Move> actions = Move.getActions(board);
+			Random random = new Random();
+		    int randIdx = random.nextInt(actions.size());
+		    Move randomMove = actions.get(randIdx);
+		    return randomMove;
+		}
 		root = new TreeNode(board);
 
-		long endTime = System.currentTimeMillis() + MAX_RUNTIME;
+		long endTime = System.currentTimeMillis() + runtime;
 		int iterations = 0;
 
-		// Expand initial root
 		root.expand();
-		ArrayList<TreeNode> rootChildren = root.children;
+		ArrayList<TreeNode> nodeChildren = root.children;
 
-		Thread[] threads = new Thread[NUM_THREADS];
-		MonteCarloRunnable[] runnables = new MonteCarloRunnable[NUM_THREADS];
+		Thread[] threads = new Thread[threadCts];
+		mctsRunnable[] runnables = new mctsRunnable[threadCts];
 
-		// Split iterations across threads
-		int threadChildCount = rootChildren.size() / NUM_THREADS;
-		int extraChildCount = rootChildren.size() % NUM_THREADS;
-		for (int threadIdx = 0; threadIdx < NUM_THREADS; threadIdx++) {
+		//Splits searching across threads
+		int numThreadChildren = nodeChildren.size() / threadCts;
+		int numExtraYouth = nodeChildren.size() % threadCts;
+		for (int threadIdx = 0; threadIdx < threadCts; threadIdx++) {
 			TreeNode threadRoot = new TreeNode(root.state);
 
-			// Update this thread's root with its section of the children
-			int startIdx = threadChildCount * threadIdx;
-			int endIdx = threadChildCount * (threadIdx + 1);
-			threadRoot.children = new ArrayList<>(rootChildren.subList(startIdx, endIdx));
-			System.out.println("From " + startIdx + " to " + endIdx);
+			//Each threads root gets section of children
+			int index_s = numThreadChildren * threadIdx;
+			int index_end = numThreadChildren * (threadIdx + 1);
+			threadRoot.children = new ArrayList<>(nodeChildren.subList(index_s, index_end));
+			System.out.println("From " + index_s + " to " + index_end);
 
-			// Give the first thread any extra children (due to integer rounding)
+			//First thread gets any extra children
 			if (threadIdx == 0) {
-				startIdx = rootChildren.size() - extraChildCount;
-				endIdx = rootChildren.size();
-				threadRoot.children.addAll(new ArrayList<>(rootChildren.subList(startIdx, endIdx)));
-				System.out.println("EXTRA: From " + startIdx + " to " + endIdx);
+				index_s = nodeChildren.size() - numExtraYouth;
+				index_end = nodeChildren.size();
+				threadRoot.children.addAll(new ArrayList<>(nodeChildren.subList(index_s, index_end)));
+				System.out.println("EXTRA: From " + index_s + " to " + index_end);
 			}
 
-			// Start the threads
-			MonteCarloRunnable threadRunnable = new MonteCarloRunnable(threadRoot, endTime);
+			mctsRunnable threadRunnable = new mctsRunnable(threadRoot, endTime);
 			runnables[threadIdx] = threadRunnable;
 
 			Thread thread = new Thread(threadRunnable);
@@ -60,8 +67,8 @@ public class monteCarlo {
 			thread.start();
 		}
 
-		// Sync all threads and wait for completion
-		for (int i = 0; i < NUM_THREADS; i++) {
+		//Syncs all threads
+		for (int i = 0; i < threadCts; i++) {
 			try {
 				threads[i].join();
 				iterations += runnables[i].iterations;
@@ -70,39 +77,33 @@ public class monteCarlo {
 			}
 		}
 
-		System.out.println("***** TOTAL ITERATIONS: " + iterations + " *****");
-
-		root = getBestMove(root);
+		root = bestMove(root);
 		Move action = root.getAction();
 		
 		return action; 
-		//sendMove(action.queenCurrent, action.queenTarget, action.arrowTarget);
 	}
 	
-	private TreeNode getBestMove(TreeNode root) {
+	private TreeNode bestMove(TreeNode root) {
 		int maxWins = -1;
 		TreeNode best = null;
 
+		//Calculates opponents losses to compare nodes since wins represents next player playing for a given state
 		for (TreeNode node : root.children) {
-			// Since wins belong the to state/player, not the action/move, the wins for a given node
-			// actually represent the wins of the next player moving from that node. Therefore, we
-			// calculate the opponent's losses as our comparison value for the root's children.
 			int wins = node.getVisits() - node.getWins();
 			if (wins > maxWins) {
 				maxWins = wins;
 				best = node;
 			}
 		}
-
 		return best;
 	}
 	
-	private class MonteCarloRunnable implements Runnable {
+	private class mctsRunnable implements Runnable {
 		TreeNode root;
 		long endTime;
 		public int iterations;
 
-		public MonteCarloRunnable(TreeNode root, long endTime) {
+		public mctsRunnable(TreeNode root, long endTime) {
 			this.root = root;
 			this.endTime = endTime;
 			iterations = 0;
@@ -111,16 +112,16 @@ public class monteCarlo {
 		@Override
 		public void run() {
 			while (System.currentTimeMillis() < endTime) {
-				TreeNode current = getMaxLeaf(root);
+				TreeNode current = bestState(root);
 				TreeNode child = current.expand();
 
-				// Check if we reached a terminal state while expanding
+				//Checks for terminal state
 				if (child == null) {
 					backpropagate(current,current.state.getOpponent());
 					continue;
 				}
 
-				int winner = playthrough(child);
+				int winner = simulate(child);
 				backpropagate(child, winner);
 
 				iterations++;
@@ -128,23 +129,21 @@ public class monteCarlo {
 		}
 	}
 	
-	private int playthrough(TreeNode current) {
+	private int simulate(TreeNode current) {
 		gameBoard state = current.state.copy();
 		int winner = -1;
 
 		while (winner < 0) {
 			ArrayList<Move> actions = Move.getActions(state);
-
-			// Check win conditions
+			
 			if (actions.size() == 0) {
 				return state.getOpponent();
 			}
-
-			// Pick a random move
+			
+			//Picks random move
 			int moveIndex = (int) (ThreadLocalRandom.current().nextDouble() * actions.size());
 			Move move = actions.get(moveIndex);
 
-			// Apply the selected move to the state
 			state.updateBoard(move.qCurr, move.qNew, move.arrow);
 			state.playerTypeLocal = state.getOpponent();
 		}
@@ -162,7 +161,7 @@ public class monteCarlo {
 		}
 	}
 	
-	private TreeNode getMaxLeaf(TreeNode root) {
+	private TreeNode bestState(TreeNode root) {
 		TreeNode current = root;
 
 		while (!current.children.isEmpty()) {
@@ -207,27 +206,20 @@ class TreeNode {
 	}
 
 	public TreeNode expand() {
-		// Get list of possible actions
 		ArrayList<Move> actions = Move.getActions(state);
 
-		// Node is fully expanded or cannot be expanded
+		//Checks if node is fully expanded
 		if (actions.size() == children.size()) {
 			return null;
 		}
-
-		// Make new state node for each action
+		
 		for (int i = 0; i < actions.size(); i++) {
 			Move childAction = actions.get(i);
-
 			gameBoard childState = state.copy();
 			childState.playerTypeLocal = state.playerTypeLocal == 1 ? 2 : 1;
 			childState.updateBoard(childAction.qCurr, childAction.qNew, childAction.arrow);
-
-			// Add each node as a child of this node
 			children.add(new TreeNode(childState, childAction, this));
 		}
-
-		// Return a random child
 		int randIndex = (int) (ThreadLocalRandom.current().nextDouble() * children.size());
 		return children.get(randIndex);
 	}
@@ -245,20 +237,16 @@ class TreeNode {
 	}
 
 	double getUCB() {
-		// EXPLORATION_FACTOR = constant defined at the top of the class.
-		// If we hit 0, then the unvisited node should return infinity.
 		if (this.getVisits() == 0) {
 			return Double.MAX_VALUE;
 		}
 
-		// uct = v = total score / number of visits == avg value of the state.
 		float uct = wins / visits;
 
-		// apply the UCB1 function for that state
 		if (parent != null) {
 			uct += EXPLORATION_FACTOR * Math.sqrt(Math.log(parent.visits) / visits);
 		}
-		// Return ucb1 score.
+		
 		return uct;
 	}
 }

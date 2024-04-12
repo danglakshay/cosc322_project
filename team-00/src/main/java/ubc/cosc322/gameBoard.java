@@ -26,16 +26,14 @@ public class gameBoard {
 	}
 
 	public void createBoard() {
-		// Place white amazons
+		//Set board
 		board[0][3] = WHITE_AMAZON;
-		board[0][6] = WHITE_AMAZON;
+		board[0][6] = BLACK_AMAZON;
 		board[3][0] = WHITE_AMAZON;
-		board[3][9] = WHITE_AMAZON;
-
-		// Place black amazons
-		board[6][0] = BLACK_AMAZON;
+		board[3][9] = BLACK_AMAZON;
+		board[6][0] = WHITE_AMAZON;
 		board[6][9] = BLACK_AMAZON;
-		board[9][3] = BLACK_AMAZON;
+		board[9][3] = WHITE_AMAZON;
 		board[9][6] = BLACK_AMAZON;
 	}
 	
@@ -55,8 +53,8 @@ public class gameBoard {
 	
 
 	public void printBoard() {
-		for (int i = 0; i < BOARD_SIZE; i++) {
-			for (int j = 0; j < BOARD_SIZE; j++) {
+		for (int i = 0; i <BOARD_SIZE; i++) {
+			for (int j = 0; j <BOARD_SIZE; j++) {
 				System.out.print(board[i][j] + " ");
 			}
 			System.out.println();
@@ -71,6 +69,7 @@ public class gameBoard {
 		    }
     }
 	
+	//Returns deep copy of board
 	public gameBoard copy() {
 		gameBoard copy = new gameBoard();
 		copy.board = new int[BOARD_SIZE][BOARD_SIZE];
