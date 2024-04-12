@@ -27,17 +27,13 @@ public class Move {
 
 			// Creating a double array list of all possible moves for the current queen.
 			ArrayList<int[]> allQueenTargets = allPossibleMoves(queenCurrent[0], queenCurrent[1], board);
-			
-			
-			if(allQueenTargets.size()!=0)
-				System.out.println(allQueenTargets.size());
 
 			while (!allQueenTargets.isEmpty()) {
 				// Iterating through all the possible moves and removing them one by one
 				int[] queenTarget = allQueenTargets.remove(0);
 
 				// Creating a double array list of all possible arrow moves for the current queen target position
-				ArrayList<int[]> allArrowTargets = allPossibleMoves(queenCurrent[0], queenCurrent[1], board);
+				ArrayList<int[]> allArrowTargets = allPossibleMoves(queenTarget[0], queenTarget[1], board);
 
 				// Add the queen's original position as a potential arrow target
 				allArrowTargets.add(queenCurrent);
@@ -89,91 +85,81 @@ public class Move {
 //	}
 	
 	public static ArrayList<int[]> allPossibleMoves(int x, int y , gameBoard board) {
-		ArrayList<int[]> targets = new ArrayList<>();
+	    ArrayList<int[]> targets = new ArrayList<>();
 
-		boolean isUpBlocked = false;
-		boolean isDownBlocked = false;
-		boolean isRightBlocked = false;
-		boolean isLeftBlocked = false;
-		boolean isRightUpBlocked = false;
-		boolean isRightDownBlocked = false;
-		boolean isLeftUpBlocked = false;
-		boolean isLeftDownBlocked = false;
+	    // Check upward direction
+	    for (int up = y + 1; up < 10; up++) {
+	        if (board.getCellValue(x, up) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{x, up});
+	        }
+	    }
 
-		for (int dist = 0; dist < 10; dist++) {
-			int up = y + dist;
-			int down = y - dist;
-			int right = x + dist;
-			int left = x - dist;
-			
+	    // Check downward direction
+	    for (int down = y - 1; down >= 0; down--) {
+	        if (board.getCellValue(x, down) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{x, down});
+	        }
+	    }
 
-			if (!isUpBlocked) {
-				if (up > 9 || board.getCellValue(x, up) != 0) {
-					isUpBlocked = true;
-				} else {
-					System.out.println("hi");
-					targets.add(new int[]{x, up});
-				}
-			}
+	    // Check right direction
+	    for (int right = x + 1; right < 10; right++) {
+	        if (board.getCellValue(right, y) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{right, y});
+	        }
+	    }
 
-			if (!isDownBlocked) {
-				if (down < 0 || board.getCellValue(x, down) != 0) {
-					isDownBlocked = true;
-				} else {
-					targets.add(new int[]{x, down});
-				}
-			}
+	    // Check left direction
+	    for (int left = x - 1; left >= 0; left--) {
+	        if (board.getCellValue(left, y) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{left, y});
+	        }
+	    }
 
-			if (!isRightBlocked) {
-				if (right > 9 || board.getCellValue(right, y) != 0) {
-					isRightBlocked = true;
-				} else {
-					targets.add(new int[]{right, y});
-				}
-			}
+	    // Check right-up direction
+	    for (int rightUpX = x + 1, rightUpY = y + 1; rightUpX < 10 && rightUpY < 10; rightUpX++, rightUpY++) {
+	        if (board.getCellValue(rightUpX, rightUpY) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{rightUpX, rightUpY});
+	        }
+	    }
 
-			if (!isLeftBlocked) {
-				if (left < 0 || board.getCellValue(left, y) != 0) {
-					isLeftBlocked = true;
-				} else {
-					targets.add(new int[]{left, y});
-				}
-			}
+	    // Check right-down direction
+	    for (int rightDownX = x + 1, rightDownY = y - 1; rightDownX < 10 && rightDownY >= 0; rightDownX++, rightDownY--) {
+	        if (board.getCellValue(rightDownX, rightDownY) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{rightDownX, rightDownY});
+	        }
+	    }
 
-			if (!isRightUpBlocked) {
-				if (right > 9 || up > 9 || board.getCellValue(right, up) != 0) {
-					isRightUpBlocked = true;
-				} else {
-					targets.add(new int[]{right, up});
-				}
-			}
+	    // Check left-up direction
+	    for (int leftUpX = x - 1, leftUpY = y + 1; leftUpX >= 0 && leftUpY < 10; leftUpX--, leftUpY++) {
+	        if (board.getCellValue(leftUpX, leftUpY) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{leftUpX, leftUpY});
+	        }
+	    }
 
-			if (!isRightDownBlocked) {
-				if (right > 9 || down < 0 || board.getCellValue(right, down) != 0) {
-					isRightDownBlocked = true;
-				} else {
-					targets.add(new int[]{right, down});
-				}
-			}
+	    // Check left-down direction
+	    for (int leftDownX = x - 1, leftDownY = y - 1; leftDownX >= 0 && leftDownY >= 0; leftDownX--, leftDownY--) {
+	        if (board.getCellValue(leftDownX, leftDownY) != 0) {
+	            break;
+	        } else {
+	            targets.add(new int[]{leftDownX, leftDownY});
+	        }
+	    }
 
-			if (!isLeftUpBlocked) {
-				if (left < 0 || up > 9 || board.getCellValue(left, up) != 0) {
-					isLeftUpBlocked = true;
-				} else {
-					targets.add(new int[]{left, up});
-				}
-			}
-
-			if (!isLeftDownBlocked) {
-				if (left < 0 || down < 0 || board.getCellValue(left, down) != 0) {
-					isLeftDownBlocked = true;
-				} else {
-					targets.add(new int[]{left, down});
-				}
-			}
-		}
-		
-		return targets;
+	    return targets;
 	}
     
 }
